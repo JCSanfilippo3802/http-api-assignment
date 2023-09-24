@@ -5,6 +5,90 @@
   <link rel="stylesheet" type="text/css" href="/style.css">
   
   <script>
+  const handleResponse = async (response) => {
+
+    response.text().then((resText) => {
+
+    const contentType = response.headers.get('Content-Type');
+
+    const content = document.getElementById('content');
+
+    //Add a horizontal rule.
+    content.appendChild(document.createElement('hr'));
+
+        const status = document.createElement('h1');
+        const message = document.createElement('p');
+
+      switch(response.status) {
+      case 200: //Success
+        status.textContent = `Success`;
+        break;
+      case 400: //Bad Request
+        status.textContent = `Bad Request`;
+        break;
+      case 401: //Unauthorized
+        status.textContent = 'Unauthorized';
+        break;
+      case 403: //Forbidden
+        status.textContent = 'Forbidden';
+        break;
+      case 404: //Not Found
+        status.textContent = `Not Found`;
+        break;
+      case 500: //Internal
+        status.textContent = 'Internal';
+        break;
+      case 501: //Not Implemented
+        status.textContent = 'Not Implemented';
+        break;
+      default: //Anything Else
+        status.textContent = `Status Code not Implemented By Client`;
+        break;
+    }
+
+        //If the server sent back json
+        if(contentType === 'application/json') {
+
+          const parsedResponse = JSON.parse(resText);
+          message.textContent = `message: ${parsedResponse.message}`;
+
+        } else if (contentType === 'text/xml') {
+
+          const parsedResponse = new window.DOMParser().parseFromString(resText, 'text/xml');
+          message.textContent = 'message: ' + parsedResponse.querySelector('message').textContent;
+
+        }
+
+        content.appendChild(status);
+        content.appendChild(message);
+      });
+  };
+
+  const requestUpdate = async () => {
+
+    const url = document.getElementById('page').value;
+    const type = document.getElementById('type').value;
+
+    let response = await fetch(url, {
+      headers: {
+        'method': 'GET',
+        'Accept': type,
+      },
+    }
+    );
+
+    handleResponse(response);
+  };
+
+  const init = () => {
+    //grab form
+    const sendButton = document.getElementById('send');
+      
+    //add event listener
+    sendButton.addEventListener('click', requestUpdate);
+  };
+
+  window.onload = init;
 
   </script>
 </head>
